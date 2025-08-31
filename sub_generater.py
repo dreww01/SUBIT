@@ -2,7 +2,7 @@ from faster_whisper import WhisperModel
 import subprocess
 import os
 
-# ----------------- ปรับค่าตรงนี้ได้ -------------------
+# ----------------- This value can be adjusted -------------------
 video_path = "test.mp4"
 max_words_per_line = int(input("Word per line: "))
 model_size = "small"
@@ -16,16 +16,16 @@ lang = input("Languge('th', 'en', 'ja', 'zh'): ").strip().lower()
 print("positiion:\n1 = MiddleBottom\n2 = Middle\n3 = MiddleTop\n4 = Middle of MiddleBottom")
 position_choice = input("Position (1/2/3/4): ")
 alignment_map = {
-    "1": 2,  # กลางล่าง
-    "2": 5,  # กลางกลาง
-    "3": 8,  # กลางบน
-    "4": 5   # ล่างกึ่งกลางของกลางกลาง = กลางกลาง + margin_v สูงขึ้น
+    "1": 2,  # MiddleBottom 
+    "2": 5,  # Middle
+    "3": 8,  # MiddleTop
+    "4": 5   # Middle of MiddleBottom
 }
 alignment = alignment_map.get(position_choice, 2)
 
-# ปรับ MarginV ตามตำแหน่ง
+# Change margin_v here
 if position_choice == "4":
-    margin_v = 180  # ล่างกึ่งกลางของกลางกลาง
+    margin_v = 180  # Middle of MiddleBottom
 else:
     margin_v = 30
 
@@ -37,18 +37,18 @@ audio_path = "audio.wav"
 ass_path = "subtitles.ass"
 output_path = "output_with_sub.mp4"
 
-# STEP 1: แยกเสียงจากวิดีโอ
+# STEP 1: Extract audio from video
 subprocess.run([
     "ffmpeg", "-y", "-i", video_path,
     "-vn", "-acodec", "pcm_s16le", "-ar", "44100", "-ac", "2",
     audio_path
 ])
 
-# STEP 2: โหลดโมเดลจาก faster-whisper
-model = WhisperModel(model_size, compute_type="int8")  # ใช้ int8 บน CPU เพื่อเร็วขึ้น
+# STEP 2: Load model from faster-whisper
+model = WhisperModel(model_size, compute_type="int8")  # Use int8 on CPU for faster performance.
 segments, _ = model.transcribe(audio_path, language=lang)
 
-# STEP 3: ฟังก์ชันแปลงเวลาเป็นรูปแบบซับ
+# STEP 3: Function to convert time into subtitle format
 def format_time(seconds):
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
@@ -56,7 +56,7 @@ def format_time(seconds):
     centis = int((seconds - int(seconds)) * 100)
     return f"{hours:01}:{minutes:02}:{secs:02}.{centis:02}"
 
-# STEP 4: สร้างไฟล์ .ass
+# STEP 4: create '.ass' file
 with open(ass_path, "w", encoding="utf-8") as f:
     f.write("[Script Info]\n")
     f.write("ScriptType: v4.00+\n")
@@ -71,7 +71,7 @@ with open(ass_path, "w", encoding="utf-8") as f:
             "StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
             "Alignment, MarginL, MarginR, MarginV, Encoding\n")
 
-    # แปลงสีจาก #RRGGBB → &HBBGGRR
+    # Convert color from #RRGGBB to &HBBGGRR
     hex_color = subtitle_color.lstrip("#")
     bgr_hex = f"&H00{hex_color[4:6]}{hex_color[2:4]}{hex_color[0:2]}"
 
@@ -106,9 +106,10 @@ with open(ass_path, "w", encoding="utf-8") as f:
 
             f.write(f"Dialogue: 0,{start_str},{end_str},Default,,0,0,0,,{text}\n")
 
-# STEP 5: ฝังซับลงในวิดีโอ
+# STEP 5: Burn subtitles into video
 subprocess.run([
     "ffmpeg", "-y", "-i", video_path,
     "-vf", f"ass={ass_path}:fontsdir=.",
     output_path
 ])
+
