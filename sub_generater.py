@@ -6,6 +6,11 @@ from datetime import datetime
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+try:
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+except NameError:
+    # __file__ is not defined in interactive mode
+    pass
 # ------------------- CONFIGURATION -------------------
 # the video path 
 print("Current working directory:", os.getcwd())
@@ -16,7 +21,7 @@ os.makedirs(VIDEO_DIR, exist_ok=True)
 # Auto-detect the first video file in /videos
 VIDEO_PATH = None
 for file in os.listdir(VIDEO_DIR):
-    if file.lower().endswith((".mp4", "MP4", ".mov", ".avi", ".mkv", ".flv", ".wmv")):
+    if file.lower().endswith((".mp4", ".mov", ".avi", ".mkv", ".flv", ".wmv")):
         VIDEO_PATH = os.path.join(VIDEO_DIR, file)
         break
 
