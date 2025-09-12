@@ -1,0 +1,7 @@
+# Core dependencies
+faster-whisper==1.0.3
+ffmpeg-python==0.2.0
+pysrt
+
+# Optional but useful
+numpy>=1.23.0
