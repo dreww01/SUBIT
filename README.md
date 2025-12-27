@@ -1,6 +1,6 @@
-# SUBIT: Automatic Video Subtitle Generator
+# ScribeFlow: Automatic Video Subtitle Generator
 
-**SUBIT** is a Python-based tool that automatically generates subtitles for videos using advanced speech-to-text technology and burns them directly into the video. It is designed to be user-friendly, fully customizable, and supports multiple languages and subtitle styles.
+**ScribeFlow** is a Python-based tool that automatically generates subtitles for videos using advanced speech-to-text technology and burns them directly into the video. It is designed to be user-friendly, fully customizable, and supports multiple languages and subtitle styles.
 
 ---
 
@@ -33,76 +33,37 @@
 
 1. **Clone or download the repository:**
    ```bash
-   git clone https://github.com/yourusername/SUBIT.git
-   cd SUBIT
+   git clone https://github.com/yourusername/ScribeFlow.git
+   cd ScribeFlow
    ```
-2. **Install Python dependencies:**
+2. **Install dependencies using `uv`:**
 
    ```bash
-   pip install -r requirements.txt
+   uv venv
+   uv pip install -r requirements.txt
    ```
 3. **Install ffmpeg** (if not already installed):
 
    * Download from [ffmpeg.org](https://ffmpeg.org/download.html)
-   * Add the ffmpeg binary to your system PATH so it can be accessed from the terminal/command prompt
+   * Add the ffmpeg binary to your system PATH
 
 ---
 
 ## Usage
 
-1. **Place your video files** in the `videos/` folder. Supported formats: `.mp4`, `.mov`, `.avi`, `.mkv`, `.flv`, `.wmv`.
-
-2. **Run the script:**
+1. **Start the API Server:**
 
    ```bash
-   python sub_generater.py
+   # Run directly (Defaults to Port 5000)
+   python app/main.py
+   
+   # Or using uvicorn directly
+   uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload
    ```
 
-3. **Follow the interactive prompts:**
-
-   * Select the video to process (if multiple are detected)
-   * Choose subtitle options (font, color, size, position, bounce effect)
-   * Select the transcription language
-
-4. **Output:**
-
-   * Final video with burned-in subtitles saved in the `outputs/` folder
-   * Generated `.ass` subtitle file saved in the `subtitles/` folder
-   * Extracted audio saved in the `audio/` folder
-
----
-
-## Customization Options
-
-* **Font:** Place custom fonts in the `fonts/` folder. Default font is `Playfair Display`.
-* **Colors:** Choose from predefined names (`yellow`, `white`, `cyan`, etc.) or use hex codes (`#FFFF00`).
-* **Subtitle Position:** Bottom, middle, top, or slightly above the bottom.
-* **Bounce Effect:** Optional animated scaling effect for each subtitle chunk.
-* **Words per Line:** Control the number of words displayed per subtitle line for readability.
-
----
-
-## Example Workflow
-
-1. Add your video `myvideo.mp4` to `videos/`.
-2. Run the script:
-
-   ```bash
-   python sub_generater.py
-   ```
-3. Configure your subtitles via prompts: color, font, size, position, and language.
-4. Wait for the process to complete.
-5. Check the `outputs/` folder for the subtitled video and `subtitles/` folder for the `.ass` file.
-
----
-
-## Troubleshooting
-
-* **ffmpeg not found:** Ensure ffmpeg is installed and added to the system PATH.
-* **No video files found:** Make sure there is at least one supported video file in `videos/`.
-* **Whisper model errors:** Check that all dependencies are installed correctly (`faster-whisper`, `ctranslate2`).
-* **Font not found:** Confirm the font file exists in the `fonts/` folder.
-* **Subtitle not displaying or double subtitles:** Ensure paths use forward slashes (`/`) for Windows compatibility.
+2. **Access the API:**
+   * Open [http://localhost:5000/docs](http://localhost:5000/docs) to see the interactive API documentation.
+   * Use the `/generate` endpoint to upload a video and configure subtitles.
 
 ---
 
@@ -110,13 +71,20 @@
 
 ```
 .
+├── app/           # FastAPI Application
+│   ├── main.py    # Entry point & API routes
+│   ├── services.py # Core logic
+│   ├── schemas.py # Pydantic models
+│   └── config.py  # Settings
 ├── audio/         # Extracted audio files
-├── fonts/         # Custom fonts for subtitles
-├── outputs/       # Final videos with burned-in subtitles
-├── subtitles/     # Generated .ass subtitle files
-├── videos/        # Input video files
-├── sub_generater.py  # Main script
-├── requirements.txt  # Python dependencies
+├── fonts/         # Custom fonts
+├── outputs/       # Final videos
+├── subtitles/     # .ass subtitle files
+├── temp/          # Temporary uploads
+├── tests/         # Pytest suite
+├── videos/        # Input videos (for manual testing)
+├── sub_generater.bak # Backup of original script
+├── requirements.txt
 └── README.md
 ```
 
@@ -124,7 +92,7 @@
 
 ## Advanced Notes
 
-* **Cross-Platform Path Handling:** SUBIT automatically formats paths for ffmpeg to avoid errors on Windows (`\` → `/`).
+* **Cross-Platform Path Handling:** ScribeFlow automatically formats paths for ffmpeg to avoid errors on Windows (`\` → `/`).
 * **Loading Existing Subtitles:** You can skip transcription and load an existing `.srt` file by modifying `parse_srt_to_segments("my_subs.srt")`.
 * **Batch Processing:** The code structure allows iterating over multiple videos in `videos/` and generating subtitles in one run.
 

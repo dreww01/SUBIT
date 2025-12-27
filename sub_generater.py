@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 from faster_whisper import WhisperModel
@@ -72,6 +71,8 @@ def get_user_inputs():
     shadow_strength = ask("Shadow strength (0=None, 1=Normal, 3=Thick)", 1.0, float)
     enable_bounce = ask("Bounce effect? (True/False)", "False", str).lower() == "true"
     lang = ask("Language ('th','en','ja','zh')", "en", str).lower()
+    use_gpu = ask("Use GPU Acceleration? (y/n)", "y", str).lower() == "y" # Added GPU option
+
     print("\nSubtitle position:\n1 = Bottom\n2 = Middle\n3 = Top\n4 = Slightly above bottom")
     position_choice = ask("Choose position", 1, str)
     alignment_map = {"1": 2, "2": 5, "3": 8, "4": 5}
@@ -91,6 +92,7 @@ def get_user_inputs():
         "lang": lang,
         "alignment": alignment,
         "margin_v": margin_v,
+        "use_gpu": use_gpu # Added to settings
     }
 
 # ------------------- CORE FUNCTIONS -------------------
@@ -187,7 +189,19 @@ def main():
     extract_audio(settings["video_path"], settings["audio_path"])
 
     print("🧠 Running speech-to-text...")
-    model = WhisperModel("small", compute_type="int8")
+    # Modified for GPU support
+    if settings["use_gpu"]:
+        try:
+            print("   (Using CUDA/GPU)")
+            model = WhisperModel("small", device="cuda", compute_type="float16")
+        except Exception as e:
+            print(f"   ⚠️ GPU init failed: {e}")
+            print("   (Falling back to CPU)")
+            model = WhisperModel("small", device="cpu", compute_type="int8")
+    else:
+        print("   (Using CPU)")
+        model = WhisperModel("small", device="cpu", compute_type="int8")
+
     segments, _ = model.transcribe(settings["audio_path"], language=settings["lang"])
 
     print("📝 Creating subtitle file...")
